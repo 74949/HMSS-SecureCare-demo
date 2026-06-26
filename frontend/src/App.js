@@ -4,8 +4,9 @@ import './styles/global.css';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
+const ADMIN_EMAILS = ['goransh1601@gmail.com', 'taneshq@gmail.com'];
+
 const demoAccounts = [
-  { role: 'Admin', email: 'admin@hmss.com', password: 'admin123' },
   { role: 'Doctor', email: 'doctor@hmss.com', password: 'doctor123' },
   { role: 'Nurse', email: 'nurse@hmss.com', password: 'nurse123' },
   { role: 'Pharmacy', email: 'pharmacy@hmss.com', password: 'pharmacy123' },
@@ -174,7 +175,7 @@ function App() {
           id: data.user.id,
           name: data.user.user_metadata?.full_name || data.user.email,
           email: data.user.email,
-          role: 'ADMIN',
+          role: ADMIN_EMAILS.includes(data.user.email) ? 'ADMIN' : (loginForm.role || 'Doctor').toUpperCase(),
           branch: 'Google Login'
         };
 
@@ -199,7 +200,7 @@ function App() {
           id: session.user.id,
           name: session.user.user_metadata?.full_name || session.user.email,
           email: session.user.email,
-          role: 'ADMIN',
+          role:  ADMIN_EMAILS.includes(session.user.email) ? 'ADMIN' : (loginForm.role || 'Doctor').toUpperCase(),
           branch: 'Google Login'
         };
 
