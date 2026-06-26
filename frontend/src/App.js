@@ -25,7 +25,7 @@ const roleCards = [
 ];
 
 const sidebarMenus = {
-  ADMIN: ['Overview', 'Patients', 'Users', 'Branches', 'Audit Logs', 'Settings'],
+  ADMIN: ['Overview', 'Patients', 'Users', 'Page Access', 'Branches', 'Audit Logs', 'Settings'],
   DOCTOR: ['Overview', 'Patients', 'Consultations', 'Prescriptions', 'Lab Reports', 'Referrals'],
   NURSE: ['Overview', 'Assigned Patients', 'Vitals', 'Upload Reports', 'Patient IDs'],
   PHARMACY: ['Overview', 'Prescriptions', 'Medicine Issue', 'Stock', 'Patient IDs'],
@@ -46,6 +46,16 @@ const permissions = {
   LAB: ['Lab requests', 'Upload reports', 'Update test status', 'No billing access']
 };
 
+const defaultPageAccess = {
+  DOCTOR: ['Overview', 'Patients', 'Consultations', 'Prescriptions', 'Lab Reports', 'Referrals'],
+  NURSE: ['Overview', 'Assigned Patients'],
+  PHARMACY: ['Overview', 'Prescriptions', 'Medicine Issue'],
+  INSURANCE: ['Overview', 'Claims', 'Invoices', 'Payment Status'],
+  TPA: ['Overview', 'Claim Verification', 'Approval Status'],
+  RECEPTION: ['Overview', 'Register Patient', 'Appointments', 'Queue'],
+  LAB: ['Overview', 'Lab Requests', 'Upload Reports', 'Test Status']
+};
+
 function App() {
   const [page, setPage] = useState('home');
   const [activeMenu, setActiveMenu] = useState('Overview');
@@ -54,6 +64,12 @@ function App() {
   const [verifiedAccess, setVerifiedAccess] = useState(() => localStorage.getItem('hmss_verified') === 'true');
   const [dashboard, setDashboard] = useState(null);
   const [patients, setPatients] = useState([]);
+  const [googleUsers, setGoogleUsers] = useState(() =>
+    JSON.parse(localStorage.getItem('hmss_google_users') || '[]')
+  );
+  const [pageAccess, setPageAccess] = useState(() =>
+    JSON.parse(localStorage.getItem('hmss_page_access') || JSON.stringify(defaultPageAccess))
+  );
   const [toast, setToast] = useState('');
   const [loginForm, setLoginForm] = useState({
     email: 'admin@hmss.com',
@@ -97,6 +113,47 @@ function App() {
     }
   }
 
+  function saveGoogleUser(googleUser) {
+    const existingUsers = JSON.parse(localStorage.getItem('hmss_google_users') || '[]');
+
+    const userRecord = {
+      ...googleUser,
+      loginMethod: 'Google',
+      lastLogin: new Date().toLocaleString(),
+      status: 'Online'
+    };
+
+    const updatedUsers = [
+      userRecord,
+      ...existingUsers.filter((u) => u.email !== googleUser.email)
+    ];
+
+    localStorage.setItem('hmss_google_users', JSON.stringify(updatedUsers));
+    setGoogleUsers(updatedUsers);
+  }
+
+  function updatePageAccess(role, pageName) {
+    const currentPages = pageAccess[role] || [];
+    const updatedRolePages = currentPages.includes(pageName)
+      ? currentPages.filter((page) => page !== pageName)
+      : [...currentPages, pageName];
+
+    const updatedAccess = {
+      ...pageAccess,
+      [role]: updatedRolePages
+    };
+
+    localStorage.setItem('hmss_page_access', JSON.stringify(updatedAccess));
+    setPageAccess(updatedAccess);
+    showToast(`${role} page access updated`);
+  }
+
+  function resetPageAccess() {
+    localStorage.setItem('hmss_page_access', JSON.stringify(defaultPageAccess));
+    setPageAccess(defaultPageAccess);
+    showToast('Default page access restored');
+  }
+
   async function loginWithGoogle() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -117,7 +174,7 @@ function App() {
           id: data.user.id,
           name: data.user.user_metadata?.full_name || data.user.email,
           email: data.user.email,
-          role: 'DOCTOR',
+          role: 'ADMIN',
           branch: 'Google Login'
         };
 
@@ -129,6 +186,7 @@ function App() {
         setToken(data.user.id);
         setVerifiedAccess(false);
         setActiveMenu('Overview');
+        saveGoogleUser(googleUser);
         setPage('dashboard');
       }
     }
@@ -141,7 +199,7 @@ function App() {
           id: session.user.id,
           name: session.user.user_metadata?.full_name || session.user.email,
           email: session.user.email,
-          role: 'DOCTOR',
+          role: 'ADMIN',
           branch: 'Google Login'
         };
 
@@ -153,6 +211,7 @@ function App() {
         setToken(session.user.id);
         setVerifiedAccess(false);
         setActiveMenu('Overview');
+        saveGoogleUser(googleUser);
         setPage('dashboard');
       }
     });
@@ -400,6 +459,10 @@ function App() {
           setActiveMenu={setActiveMenu}
           verifiedAccess={verifiedAccess}
           verifyDoctorAccess={verifyDoctorAccess}
+          googleUsers={googleUsers}
+          pageAccess={pageAccess}
+          updatePageAccess={updatePageAccess}
+          resetPageAccess={resetPageAccess}
         />
       )}
 
@@ -652,11 +715,15 @@ function DashboardPage({
   activeMenu,
   setActiveMenu,
   verifiedAccess,
-  verifyDoctorAccess
+  verifyDoctorAccess,
+  googleUsers,
+  pageAccess,
+  updatePageAccess,
+  resetPageAccess
 }) {
   const stats = dashboard?.stats || {};
   const list = permissions[user.role] || [];
-  const menus = sidebarMenus[user.role] || ['Overview'];
+  const menus = user.role === 'ADMIN' ? sidebarMenus.ADMIN : (pageAccess[user.role] || sidebarMenus[user.role] || ['Overview']);
   const canAddPatient = ['ADMIN', 'DOCTOR', 'RECEPTION'].includes(user.role);
   const isAdmin = user.role === 'ADMIN';
   const isDoctor = user.role === 'DOCTOR';
@@ -723,7 +790,19 @@ function DashboardPage({
           />
         )}
 
-        {activeMenu !== 'Overview' && activeMenu !== 'Patients' && (
+        {activeMenu === 'Users' && isAdmin && (
+          <GoogleUsersPanel googleUsers={googleUsers} />
+        )}
+
+        {activeMenu === 'Page Access' && isAdmin && (
+          <PageAccessPanel
+            pageAccess={pageAccess}
+            updatePageAccess={updatePageAccess}
+            resetPageAccess={resetPageAccess}
+          />
+        )}
+
+        {activeMenu !== 'Overview' && activeMenu !== 'Patients' && activeMenu !== 'Users' && activeMenu !== 'Page Access' && (
           <RoleModule title={activeMenu} user={user} patients={patients} />
         )}
       </section>
@@ -889,6 +968,118 @@ function PatientTable({ patients }) {
   );
 }
 
+function PageAccessPanel({ pageAccess, updatePageAccess, resetPageAccess }) {
+  const managedRoles = ['DOCTOR', 'NURSE', 'PHARMACY', 'INSURANCE', 'TPA', 'RECEPTION', 'LAB'];
+
+  return (
+    <div className="content-grid">
+      <div className="panel wide-panel">
+        <h2>Role Page Access Control</h2>
+        <p className="muted">
+          Admin can decide which dashboard pages are visible for every role.
+          Checked means page is visible. Unchecked means page will be hidden from that role's sidebar.
+        </p>
+
+        <div className="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Role</th>
+                <th>Visible Pages</th>
+              </tr>
+            </thead>
+            <tbody>
+              {managedRoles.map((role) => (
+                <tr key={role}>
+                  <td><strong>{role}</strong></td>
+                  <td>
+                    <div className="access-check-grid">
+                      {(sidebarMenus[role] || []).map((pageName) => (
+                        <label className="access-check" key={`${role}-${pageName}`}>
+                          <input
+                            type="checkbox"
+                            checked={(pageAccess[role] || []).includes(pageName)}
+                            onChange={() => updatePageAccess(role, pageName)}
+                          />
+                          <span>{pageName}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <button type="button" className="secondary-btn access-reset-btn" onClick={resetPageAccess}>
+          Reset Default Access
+        </button>
+      </div>
+
+      <div className="panel">
+        <h2>How It Works</h2>
+        <div className="permission">✓ Only Admin can open this page</div>
+        <div className="permission">✓ Checkbox checked = page visible</div>
+        <div className="permission">✓ Checkbox unchecked = page hidden</div>
+        <div className="permission">✓ Saved in browser local storage</div>
+      </div>
+    </div>
+  );
+}
+
+function GoogleUsersPanel({ googleUsers }) {
+  return (
+    <div className="content-grid">
+      <div className="panel wide-panel">
+        <h2>Google Login Users</h2>
+        <p className="muted">Users who login using Google authentication will appear here on the Admin dashboard.</p>
+
+        {!googleUsers.length ? (
+          <p className="muted">No Google users logged in yet.</p>
+        ) : (
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Branch</th>
+                  <th>Login Method</th>
+                  <th>Last Login</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {googleUsers.map((u) => (
+                  <tr key={u.email}>
+                    <td>{u.name}</td>
+                    <td>{u.email}</td>
+                    <td>{u.role}</td>
+                    <td>{u.branch}</td>
+                    <td>{u.loginMethod || 'Google'}</td>
+                    <td>{u.lastLogin || '-'}</td>
+                    <td>{u.status || 'Online'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      <div className="panel">
+        <h2>Google Auth Status</h2>
+        <div className="permission">✓ Supabase Google Auth enabled</div>
+        <div className="permission">✓ Vercel environment variables connected</div>
+        <div className="permission">✓ Google users visible in Admin Users page</div>
+        <div className="permission">✓ New Google users become ADMIN by default</div>
+      </div>
+    </div>
+  );
+}
+
 function InfoCard({ icon, title, text, onClick }) {
   return (
     <div className="info-card">
@@ -934,6 +1125,7 @@ function getMenuIcon(item) {
     Queue: '🎫',
     'Register Patient': '➕',
     'Basic Details': '📌',
+    'Page Access': '✅',
     'Lab Requests': '🧪',
     'Test Status': '✅',
     Documents: '📄',

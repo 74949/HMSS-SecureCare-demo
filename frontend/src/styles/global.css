@@ -4,6 +4,14 @@
   padding: 0;
 }
 
+html,
+body,
+#root {
+  width: 100%;
+  min-height: 100%;
+  overflow-x: hidden;
+}
+
 :root {
   --primary: #0b67c7;
   --primary-dark: #0759ad;
@@ -38,7 +46,15 @@ button {
   cursor: pointer;
 }
 
+img,
+video,
+svg,
+canvas {
+  max-width: 100%;
+}
+
 .app-shell {
+  width: 100%;
   min-height: 100vh;
   background: radial-gradient(circle at 0 0, rgba(14, 165, 233, 0.16), transparent 35%), var(--bg);
 }
@@ -53,9 +69,11 @@ button {
   border-radius: 14px;
   z-index: 99;
   box-shadow: 0 16px 35px rgba(2, 6, 23, 0.24);
+  max-width: calc(100vw - 36px);
 }
 
 .navbar {
+  width: 100%;
   min-height: 78px;
   background: rgba(255, 255, 255, 0.94);
   display: flex;
@@ -164,8 +182,9 @@ button {
 }
 
 .hero-section {
+  width: 100%;
   display: grid;
-  grid-template-columns: 1.3fr 0.7fr;
+  grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.7fr);
   gap: 34px;
   align-items: center;
   padding: 90px 7%;
@@ -186,8 +205,12 @@ button {
   color: #fff;
 }
 
+.hero-copy {
+  min-width: 0;
+}
+
 .hero-copy h1 {
-  font-size: 58px;
+  font-size: clamp(34px, 6vw, 58px);
   line-height: 1.04;
   color: #0f2f5f;
   max-width: 900px;
@@ -209,7 +232,7 @@ button {
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
   margin-top: 30px;
 }
@@ -242,6 +265,7 @@ button {
 
 .command-card {
   padding: 30px;
+  min-width: 0;
 }
 
 .scan-ring {
@@ -284,6 +308,7 @@ button {
 .mini-bars i:nth-child(5) { height: 70%; }
 
 .section {
+  width: 100%;
   padding: 60px 7%;
 }
 
@@ -298,7 +323,7 @@ button {
 }
 
 .section-title h2 {
-  font-size: 38px;
+  font-size: clamp(28px, 5vw, 38px);
   color: #0f2f5f;
 }
 
@@ -310,13 +335,14 @@ button {
 
 .cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
   gap: 20px;
 }
 
 .info-card {
   padding: 26px;
   transition: 0.25s;
+  min-width: 0;
 }
 
 .info-card:hover {
@@ -347,9 +373,10 @@ button {
 }
 
 .auth-page {
+  width: 100%;
   min-height: calc(100vh - 78px);
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 }
 
 .auth-left {
@@ -359,6 +386,7 @@ button {
   position: relative;
   display: flex;
   align-items: center;
+  min-width: 0;
 }
 
 .brand-box {
@@ -385,8 +413,12 @@ button {
   letter-spacing: 2px;
 }
 
+.left-content {
+  min-width: 0;
+}
+
 .left-content h1 {
-  font-size: 46px;
+  font-size: clamp(32px, 5vw, 46px);
   line-height: 1.18;
 }
 
@@ -414,6 +446,7 @@ button {
   display: grid;
   place-items: center;
   padding: 42px;
+  min-width: 0;
 }
 
 .auth-card {
@@ -547,7 +580,7 @@ button {
 .demo-box button {
   width: 100%;
   display: grid;
-  grid-template-columns: 90px 1fr 90px;
+  grid-template-columns: 90px minmax(0, 1fr) 90px;
   text-align: left;
   gap: 8px;
   background: #fff;
@@ -555,6 +588,11 @@ button {
   padding: 10px;
   border-radius: 10px;
   margin-bottom: 8px;
+}
+
+.demo-box button span,
+.demo-box button small {
+  overflow-wrap: anywhere;
 }
 
 .demo-box button:hover {
@@ -583,8 +621,9 @@ button {
 }
 
 .erp-layout {
+  width: 100%;
   display: grid;
-  grid-template-columns: 280px 1fr;
+  grid-template-columns: 280px minmax(0, 1fr);
   min-height: calc(100vh - 78px);
 }
 
@@ -639,6 +678,7 @@ button {
 .profile-card p {
   opacity: 0.8;
   margin: 5px 0;
+  overflow-wrap: anywhere;
 }
 
 .profile-card span {
@@ -686,6 +726,7 @@ button {
 .erp-main {
   padding: 28px;
   overflow: auto;
+  min-width: 0;
 }
 
 .erp-topbar {
@@ -697,7 +738,7 @@ button {
 }
 
 .erp-topbar h1 {
-  font-size: 34px;
+  font-size: clamp(26px, 5vw, 34px);
   color: #0f2f5f;
 }
 
@@ -709,7 +750,7 @@ button {
 
 .kpi-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(170px, 100%), 1fr));
   gap: 18px;
   margin-bottom: 24px;
 }
@@ -732,13 +773,14 @@ button {
 .content-grid,
 .analytics-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
   gap: 20px;
 }
 
 .panel {
   padding: 24px;
   overflow: hidden;
+  min-width: 0;
 }
 
 .panel h2 {
@@ -756,6 +798,7 @@ button {
   padding: 12px;
   border-radius: 12px;
   margin-bottom: 10px;
+  overflow-wrap: anywhere;
 }
 
 .work-count {
@@ -837,7 +880,9 @@ button {
 }
 
 .table-wrap {
-  overflow: auto;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .table-wrap table {
@@ -851,12 +896,14 @@ button {
   color: #fff;
   text-align: left;
   padding: 12px;
+  white-space: nowrap;
 }
 
 .table-wrap td {
   border-bottom: 1px solid #e2e8f0;
   padding: 12px;
   color: #334155;
+  overflow-wrap: anywhere;
 }
 
 .footer {
@@ -896,11 +943,6 @@ button {
     height: auto;
   }
 
-  .hero-copy h1,
-  .left-content h1 {
-    font-size: 38px;
-  }
-
   .stats-grid {
     grid-template-columns: 1fr;
   }
@@ -925,4 +967,119 @@ button {
     align-items: flex-start;
     flex-direction: column;
   }
+}
+
+@media (max-width: 768px) {
+  .hero-section,
+  .section,
+  .erp-main {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .auth-right,
+  .auth-left {
+    padding: 28px 18px;
+  }
+
+  .auth-card {
+    padding: 22px;
+  }
+
+  .brand-box {
+    position: static;
+    margin-bottom: 36px;
+  }
+
+  .auth-left {
+    display: block;
+  }
+
+  .hero-buttons,
+  .top-actions,
+  .nav-actions {
+    width: 100%;
+  }
+
+  .primary-btn,
+  .secondary-btn,
+  .outline-btn {
+    width: 100%;
+  }
+
+  .user-pill {
+    width: 100%;
+    text-align: center;
+  }
+
+  .toast {
+    top: 94px;
+    left: 18px;
+    right: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar {
+    gap: 12px;
+  }
+
+  .brand {
+    font-size: 16px;
+  }
+
+  .brand span {
+    padding: 8px 10px;
+  }
+
+  .hero-section {
+    padding-top: 52px;
+    padding-bottom: 52px;
+  }
+
+  .command-card,
+  .info-card,
+  .panel,
+  .kpi-card,
+  .auth-card {
+    border-radius: 16px;
+  }
+
+  .scan-ring {
+    width: 72px;
+    height: 72px;
+    font-size: 32px;
+  }
+
+  .work-count {
+    font-size: 52px;
+  }
+  .access-check-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 10px;
+}
+
+.access-check {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: #f8fbfd;
+  border: 1px solid #e2e8f0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-weight: 800;
+  color: #334155;
+}
+
+.access-check input {
+  width: 17px;
+  height: 17px;
+  accent-color: #0b67c7;
+}
+
+.access-reset-btn {
+  margin-top: 18px;
+}
+
 }
