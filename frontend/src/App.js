@@ -7,13 +7,54 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 const ADMIN_EMAILS = ['goransh1601@gmail.com', 'taneshq@gmail.com'];
 
 const demoAccounts = [
-  { role: 'Doctor', email: 'doctor@hmss.com', password: 'doctor123' },
-  { role: 'Nurse', email: 'nurse@hmss.com', password: 'nurse123' },
-  { role: 'Pharmacy', email: 'pharmacy@hmss.com', password: 'pharmacy123' },
-  { role: 'Insurance', email: 'insurance@hmss.com', password: 'insurance123' },
-  { role: 'TPA', email: 'tpa@hmss.com', password: 'tpa123' },
-  { role: 'Reception', email: 'reception@hmss.com', password: 'reception123' },
-  { role: 'Lab', email: 'lab@hmss.com', password: 'lab123' }
+  // Doctors
+  { role: 'Doctor', name: 'Dr. Sharma', email: 'sharma.doctor@hmss.com', password: 'sharma123' },
+  { role: 'Doctor', name: 'Dr. Mehta', email: 'mehta.doctor@hmss.com', password: 'mehta123' },
+  { role: 'Doctor', name: 'Dr. Singh', email: 'singh.doctor@hmss.com', password: 'singh123' },
+  { role: 'Doctor', name: 'Dr. Verma', email: 'verma.doctor@hmss.com', password: 'verma123' },
+  { role: 'Doctor', name: 'Dr. Patel', email: 'patel.doctor@hmss.com', password: 'patel123' },
+
+  // Nurses
+  { role: 'Nurse', name: 'Nurse Priya', email: 'priya.nurse@hmss.com', password: 'priya123' },
+  { role: 'Nurse', name: 'Nurse Aditi', email: 'aditi.nurse@hmss.com', password: 'aditi123' },
+  { role: 'Nurse', name: 'Nurse Riya', email: 'riya.nurse@hmss.com', password: 'riya123' },
+  { role: 'Nurse', name: 'Nurse Neha', email: 'neha.nurse@hmss.com', password: 'neha123' },
+  { role: 'Nurse', name: 'Nurse Kavya', email: 'kavya.nurse@hmss.com', password: 'kavya123' },
+
+  // Pharmacy
+  { role: 'Pharmacy', name: 'Amit Pharmacy', email: 'amit.pharmacy@hmss.com', password: 'amit123' },
+  { role: 'Pharmacy', name: 'Rohit Pharmacy', email: 'rohit.pharmacy@hmss.com', password: 'rohit123' },
+  { role: 'Pharmacy', name: 'Vishal Pharmacy', email: 'vishal.pharmacy@hmss.com', password: 'vishal123' },
+  { role: 'Pharmacy', name: 'Mohit Pharmacy', email: 'mohit.pharmacy@hmss.com', password: 'mohit123' },
+  { role: 'Pharmacy', name: 'Arjun Pharmacy', email: 'arjun.pharmacy@hmss.com', password: 'arjun123' },
+
+  // Insurance
+  { role: 'Insurance', name: 'Sonia Insurance', email: 'sonia.insurance@hmss.com', password: 'sonia123' },
+  { role: 'Insurance', name: 'Rakesh Insurance', email: 'rakesh.insurance@hmss.com', password: 'rakesh123' },
+  { role: 'Insurance', name: 'Pankaj Insurance', email: 'pankaj.insurance@hmss.com', password: 'pankaj123' },
+  { role: 'Insurance', name: 'Nitin Insurance', email: 'nitin.insurance@hmss.com', password: 'nitin123' },
+  { role: 'Insurance', name: 'Vivek Insurance', email: 'vivek.insurance@hmss.com', password: 'vivek123' },
+
+  // TPA
+  { role: 'TPA', name: 'Abhishek TPA', email: 'abhishek.tpa@hmss.com', password: 'abhishek123' },
+  { role: 'TPA', name: 'Raj TPA', email: 'raj.tpa@hmss.com', password: 'raj123' },
+  { role: 'TPA', name: 'Ashish TPA', email: 'ashish.tpa@hmss.com', password: 'ashish123' },
+  { role: 'TPA', name: 'Gaurav TPA', email: 'gaurav.tpa@hmss.com', password: 'gaurav123' },
+  { role: 'TPA', name: 'Manish TPA', email: 'manish.tpa@hmss.com', password: 'manish123' },
+
+  // Reception
+  { role: 'Reception', name: 'Sneha Reception', email: 'sneha.reception@hmss.com', password: 'sneha123' },
+  { role: 'Reception', name: 'Pooja Reception', email: 'pooja.reception@hmss.com', password: 'pooja123' },
+  { role: 'Reception', name: 'Rohan Reception', email: 'rohan.reception@hmss.com', password: 'rohan123' },
+  { role: 'Reception', name: 'Deepak Reception', email: 'deepak.reception@hmss.com', password: 'deepak123' },
+  { role: 'Reception', name: 'Komal Reception', email: 'komal.reception@hmss.com', password: 'komal123' },
+
+  // Lab
+  { role: 'Lab', name: 'Rahul Lab', email: 'rahul.lab@hmss.com', password: 'rahul123' },
+  { role: 'Lab', name: 'Kunal Lab', email: 'kunal.lab@hmss.com', password: 'kunal123' },
+  { role: 'Lab', name: 'Ankit Lab', email: 'ankit.lab@hmss.com', password: 'ankit123' },
+  { role: 'Lab', name: 'Saurabh Lab', email: 'saurabh.lab@hmss.com', password: 'saurabh123' },
+  { role: 'Lab', name: 'Nikhil Lab', email: 'nikhil.lab@hmss.com', password: 'nikhil123' }
 ];
 
 const roleCards = [
@@ -297,7 +338,7 @@ function App() {
 
       const demoUser = {
         id: demo.email,
-        name: demo.role === 'Admin' ? 'Central Admin' : `${demo.role} User`,
+        name: demo.name,
         email: demo.email,
         role: demo.role.toUpperCase(),
         branch: loginForm.branch
@@ -662,7 +703,7 @@ function LoginPage({
                 value={loginForm.role}
                 onChange={(e) => setLoginForm({ ...loginForm, role: e.target.value })}
               >
-                {['Admin', 'Doctor', 'Nurse', 'Pharmacy', 'Insurance', 'TPA', 'Reception', 'Lab'].map((r) => (
+                {['Doctor', 'Nurse', 'Pharmacy', 'Insurance', 'TPA', 'Reception', 'Lab'].map((r) => (
                   <option key={r}>{r}</option>
                 ))}
               </select>
