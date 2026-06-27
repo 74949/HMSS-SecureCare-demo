@@ -56,6 +56,21 @@ const defaultPageAccess = {
   RECEPTION: ['Overview', 'Register Patient', 'Appointments', 'Queue'],
   LAB: ['Overview', 'Lab Requests', 'Upload Reports', 'Test Status']
 };
+const roleUsers = {
+  DOCTOR: ['Dr. Sharma', 'Dr. Mehta', 'Dr. Singh', 'Dr. Verma', 'Dr. Patel'],
+  NURSE: ['Nurse Priya', 'Nurse Aditi', 'Nurse Riya', 'Nurse Neha', 'Nurse Kavya'],
+  PHARMACY: ['Amit Pharmacy', 'Rohit Pharmacy', 'Vishal Pharmacy', 'Mohit Pharmacy', 'Arjun Pharmacy'],
+  INSURANCE: ['Sonia Insurance', 'Rakesh Insurance', 'Pankaj Insurance', 'Nitin Insurance', 'Vivek Insurance'],
+  TPA: ['Abhishek TPA', 'Raj TPA', 'Ashish TPA', 'Gaurav TPA', 'Manish TPA'],
+  RECEPTION: ['Sneha Reception', 'Pooja Reception', 'Rohan Reception', 'Deepak Reception', 'Komal Reception'],
+  LAB: ['Rahul Lab', 'Kunal Lab', 'Ankit Lab', 'Saurabh Lab', 'Nikhil Lab']
+};
+
+const defaultUserPageAccess = Object.fromEntries(
+  Object.entries(roleUsers).flatMap(([role, users]) =>
+    users.map((person) => [`${role}-${person}`, defaultPageAccess[role] || []])
+  )
+);
 
 function App() {
   const [page, setPage] = useState('home');
@@ -69,8 +84,8 @@ function App() {
     JSON.parse(localStorage.getItem('hmss_google_users') || '[]')
   );
   const [pageAccess, setPageAccess] = useState(() =>
-    JSON.parse(localStorage.getItem('hmss_page_access') || JSON.stringify(defaultPageAccess))
-  );
+  JSON.parse(localStorage.getItem('hmss_page_access') || JSON.stringify(defaultUserPageAccess))
+);
   const [toast, setToast] = useState('');
   const [loginForm, setLoginForm] = useState({
     email: 'admin@hmss.com',
@@ -133,27 +148,27 @@ function App() {
     setGoogleUsers(updatedUsers);
   }
 
-  function updatePageAccess(role, pageName) {
-    const currentPages = pageAccess[role] || [];
-    const updatedRolePages = currentPages.includes(pageName)
-      ? currentPages.filter((page) => page !== pageName)
-      : [...currentPages, pageName];
+  function updatePageAccess(roleUserKey, pageName) {
+  const currentPages = pageAccess[roleUserKey] || [];
+  const updatedUserPages = currentPages.includes(pageName)
+    ? currentPages.filter((page) => page !== pageName)
+    : [...currentPages, pageName];
 
-    const updatedAccess = {
-      ...pageAccess,
-      [role]: updatedRolePages
-    };
+  const updatedAccess = {
+    ...pageAccess,
+    [roleUserKey]: updatedUserPages
+  };
 
-    localStorage.setItem('hmss_page_access', JSON.stringify(updatedAccess));
-    setPageAccess(updatedAccess);
-    showToast(`${role} page access updated`);
-  }
+  localStorage.setItem('hmss_page_access', JSON.stringify(updatedAccess));
+  setPageAccess(updatedAccess);
+  showToast(`${roleUserKey} page access updated`);
+}
 
   function resetPageAccess() {
-    localStorage.setItem('hmss_page_access', JSON.stringify(defaultPageAccess));
-    setPageAccess(defaultPageAccess);
-    showToast('Default page access restored');
-  }
+  localStorage.setItem('hmss_page_access', JSON.stringify(defaultUserPageAccess));
+  setPageAccess(defaultUserPageAccess);
+  showToast('Default user page access restored');
+}
 
   async function loginWithGoogle() {
     const { error } = await supabase.auth.signInWithOAuth({
@@ -971,14 +986,16 @@ function PatientTable({ patients }) {
 
 function PageAccessPanel({ pageAccess, updatePageAccess, resetPageAccess }) {
   const managedRoles = ['DOCTOR', 'NURSE', 'PHARMACY', 'INSURANCE', 'TPA', 'RECEPTION', 'LAB'];
+  const [selectedUsers, setSelectedUsers] = useState(
+    Object.fromEntries(managedRoles.map((role) => [role, roleUsers[role][0]]))
+  );
 
   return (
     <div className="content-grid">
       <div className="panel wide-panel">
-        <h2>Role Page Access Control</h2>
+        <h2>User Page Access Control</h2>
         <p className="muted">
-          Admin can decide which dashboard pages are visible for every role.
-          Checked means page is visible. Unchecked means page will be hidden from that role's sidebar.
+          Admin can give different page access to every individual person under each role.
         </p>
 
         <div className="table-wrap">
@@ -986,29 +1003,51 @@ function PageAccessPanel({ pageAccess, updatePageAccess, resetPageAccess }) {
             <thead>
               <tr>
                 <th>Role</th>
+                <th>Select User</th>
                 <th>Visible Pages</th>
               </tr>
             </thead>
+
             <tbody>
-              {managedRoles.map((role) => (
-                <tr key={role}>
-                  <td><strong>{role}</strong></td>
-                  <td>
-                    <div className="access-check-grid">
-                      {(sidebarMenus[role] || []).map((pageName) => (
-                        <label className="access-check" key={`${role}-${pageName}`}>
-                          <input
-                            type="checkbox"
-                            checked={(pageAccess[role] || []).includes(pageName)}
-                            onChange={() => updatePageAccess(role, pageName)}
-                          />
-                          <span>{pageName}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {managedRoles.map((role) => {
+                const selectedUser = selectedUsers[role];
+                const accessKey = `${role}-${selectedUser}`;
+
+                return (
+                  <tr key={role}>
+                    <td><strong>{role}</strong></td>
+
+                    <td>
+                      <select
+                        className="access-user-select"
+                        value={selectedUser}
+                        onChange={(e) =>
+                          setSelectedUsers({ ...selectedUsers, [role]: e.target.value })
+                        }
+                      >
+                        {roleUsers[role].map((person) => (
+                          <option key={person} value={person}>{person}</option>
+                        ))}
+                      </select>
+                    </td>
+
+                    <td>
+                      <div className="access-check-grid">
+                        {(sidebarMenus[role] || []).map((pageName) => (
+                          <label className="access-check" key={`${accessKey}-${pageName}`}>
+                            <input
+                              type="checkbox"
+                              checked={(pageAccess[accessKey] || []).includes(pageName)}
+                              onChange={() => updatePageAccess(accessKey, pageName)}
+                            />
+                            <span>{pageName}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -1020,9 +1059,9 @@ function PageAccessPanel({ pageAccess, updatePageAccess, resetPageAccess }) {
 
       <div className="panel">
         <h2>How It Works</h2>
-        <div className="permission">✓ Only Admin can open this page</div>
-        <div className="permission">✓ Checkbox checked = page visible</div>
-        <div className="permission">✓ Checkbox unchecked = page hidden</div>
+        <div className="permission">✓ Every role has 5 demo users</div>
+        <div className="permission">✓ Select user from dropdown</div>
+        <div className="permission">✓ Give separate page access to each person</div>
         <div className="permission">✓ Saved in browser local storage</div>
       </div>
     </div>

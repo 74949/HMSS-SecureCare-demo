@@ -1081,5 +1081,21 @@ canvas {
 .access-reset-btn {
   margin-top: 18px;
 }
+.access-user-select {
+  width: 100%;
+  min-width: 180px;
+  padding: 10px 12px;
+  border: 1px solid #dbe2ea;
+  border-radius: 12px;
+  background: #f8fbfd;
+  color: #0f172a;
+  font-weight: 800;
+}
+
+.access-user-select:focus {
+  outline: 3px solid rgba(11, 103, 199, 0.16);
+  border-color: var(--primary);
+  background: #fff;
+}
 
 }
